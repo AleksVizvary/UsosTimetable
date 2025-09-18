@@ -1,0 +1,7 @@
+Chemia: 4
+Fizyka I: 2
+Podstawy Informatyki: 2
+Procesy wytwarzania metali i stopów: 2
+Analiza matematyczna I: 2
+Podstawy programowania: 2
+Algebra: 2
