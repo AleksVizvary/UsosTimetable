@@ -295,3 +295,4 @@ def run(url, test=False):
 url = "https://web.usos.agh.edu.pl/kontroler.php?_action=katalog2%2Fprzedmioty%2FpokazPlanGrupyPrzedmiotow&grupa_kod=ITE_1S_sem1&cdyd_kod=25%2F26-Z&fbclid=IwY"
 test = True
 run(url, test)
+
