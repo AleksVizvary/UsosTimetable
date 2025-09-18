@@ -1,10 +1,10 @@
-
 import requests
 from bs4 import BeautifulSoup
 from bs4 import Tag
 import pandas as pd
 import datetime
 import os
+import pathlib
 
 ### CLEANING THE DATE & TIME ###
 
@@ -126,10 +126,16 @@ def create_completed_pandas_form(raw_timetable, test=False):
 
     return timetable
 
-def save_file(plan_zajec):
-    lista_plikow = os.listdir(os.getcwd())
+def save_file(final_file):
+
+    path = pathlib.Path(__file__).parent.resolve()
+    path = f"/{path}/timetables"
+
+    lista_plikow = os.listdir(path)
     nr = 1
     nazwa = f"plan_{nr}.xlsx"
+
+
 
     while True:
         nazwa = f"plan_{nr}.xlsx"
@@ -137,7 +143,7 @@ def save_file(plan_zajec):
             break
         nr += 1
 
-    plan_zajec.to_excel(f"/Users/aleksandervizvary/Desktop/UsosProject/timetables/{nazwa}")
+    final_file.to_excel(f"/Users/aleksandervizvary/Documents/Programs/UsosProject/timetables/{nazwa}")
 
 ### CREATING REPORT (SHOWS CLASSES QTY AND ELSE DATA) ###
 
@@ -156,7 +162,8 @@ def create_report(timetable_dict):
 
 def save_report(report):
 
-    path = "/Users/aleksandervizvary/Desktop/UsosProject/timetables/reports"
+    path = pathlib.Path(__file__).parent.resolve()
+    path = f"/{path}/reports"
     files_list = os.listdir(path)
 
     nr = 1
@@ -166,7 +173,7 @@ def save_report(report):
             break
         nr += 1
 
-    path = f"/Users/aleksandervizvary/Desktop/UsosProject/timetables/reports/{file_name}"
+    path = f"{path}/{file_name}"
 
     with open(path, "w") as text_file:
 
@@ -188,20 +195,15 @@ def save_report(report):
 
 ### MAIN FUNCTIONS ###
 
-def create_timetable_soup(url, path):
-    if path is None:
-        try:
-            page = requests.get(url)
-            soup = BeautifulSoup(page.text, 'html.parser')
+def create_timetable_soup(url):
+    try:
+        page = requests.get(url)
+        soup = BeautifulSoup(page.text, 'html.parser')
 
-        except:
-            print("Not today now, lad")
-            exit()
-    else:
-        with open(path, 'r') as file:
-            page = file.read()
+    except:
+        print("Not today now, lad")
+        exit()
 
-        soup = BeautifulSoup(page, 'html.parser')
     try:
         timetable_soup = soup.find("usos-timetable")
     except:
@@ -212,7 +214,6 @@ def create_timetable_soup(url, path):
     except:
         print("Not today now, lad")
         exit()
-
 
     return timetable_day_list
 
@@ -250,8 +251,8 @@ def create_timetable_for_selected_groups(timetable_dict, selected_group_numbers)
 
     return final_timetable
 
-def create_final_timetable(url, test=False, path=None):
-    timetable_soup = create_timetable_soup(url, path)
+def create_final_timetable(url, test=False):
+    timetable_soup = create_timetable_soup(url)
     timetable_dict = create_timetable_dict(timetable_soup)
     group_qty_per_lesson_type = find_group_qty_per_lesson_type(timetable_dict)
     selected_group_numbers = select_group_numbers(group_qty_per_lesson_type, test)
@@ -260,7 +261,6 @@ def create_final_timetable(url, test=False, path=None):
     return final_timetable_dict
 
 ### COMBINED FUNCTIONS ###
-
 
 def print_raw_timetable(timetable_dict):
 
@@ -276,22 +276,22 @@ def print_raw_timetable(timetable_dict):
                 print(f"{lesson}: {day_timetable[lesson]}")
             print("============================")
 
-def run(url, test=False, path=None):
-    timetable_dict = create_final_timetable(url, test, path)
+def run(url, test=False):
+
+    timetable_dict = create_final_timetable(url, test)
 
     if test:
-        final_file = create_completed_pandas_form(timetable_dict, test=True)
+        final_file = create_completed_pandas_form(timetable_dict, test)
         print_raw_timetable(timetable_dict)
-        report = create_report(timetable_dict)
-        save_report(report)
 
-    final_file = create_completed_pandas_form(timetable_dict)
+    report = create_report(timetable_dict)
+    save_report(report)
+
+    final_file = create_completed_pandas_form(timetable_dict, test)
     save_file(final_file)
 
 ### ================== ###
 
 url = "https://web.usos.agh.edu.pl/kontroler.php?_action=katalog2%2Fprzedmioty%2FpokazPlanGrupyPrzedmiotow&grupa_kod=ITE_1S_sem1&cdyd_kod=25%2F26-Z&fbclid=IwY"
-path = '/Users/aleksandervizvary/Desktop/usos_plan.html'
 test = True
-# test = False
 run(url, test)
