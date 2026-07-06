@@ -2,6 +2,8 @@ from bs4 import BeautifulSoup
 import requests
 import pandas as pd
 import pathlib
+from datetime import datetime, timedelta
+
 pd.set_option("display.max_columns", 500)
 
 
@@ -59,28 +61,59 @@ def find_group_qty_per_lesson_type(timetable_dict):
     for weekday in timetable_dict:
         day = timetable_dict[weekday]
         for lesson in day:
-            type = lesson['group_type']
+            l_type = lesson['group_type']
             group_nr = lesson['group_nr']
-            if int(group_nr) > int(group_qty_per_lesson_type[type]):
-                group_qty_per_lesson_type[type] = group_nr
+            if int(group_nr) > int(group_qty_per_lesson_type[l_type]):
+                group_qty_per_lesson_type[l_type] = group_nr
 
     return group_qty_per_lesson_type
 
 def select_group_numbers(group_qty_per_lesson_type, test):
+    selected_group_nr = '0'
+    selected_group_numbers = {}
+
     if test:
-        return {group: "1" for group in group_qty_per_lesson_type}
+        for group_type in group_qty_per_lesson_type:
+            selected_group_numbers[group_type] = group_qty_per_lesson_type[group_type]
+            # selected_groups[group_type] = '0'
+    else:
+        for group_type in group_qty_per_lesson_type:
+            w = ''
+            if group_type == "wykład":
+                while w != 'y' and w!='n':
+                    w = input("Dodawać wykład?: y/n\n")
 
-    selected_groups = {}
-    for group_type in group_qty_per_lesson_type:
-        while True:
-            selected_group_nr = input(
-                f"Choose group number for a {group_type.upper()} group, max {group_qty_per_lesson_type[group_type]} groupes: ")
-            if selected_group_nr.isdigit() and 1 <= int(selected_group_nr) <= int(group_qty_per_lesson_type[group_type]):
-                break
-            print("🫥🫥🫥")
+                    if w == 'y':
+                        selected_group_nr = '1'
+                    elif w == 'n':
+                        selected_group_nr = '0'
 
-        selected_groups[group_type] = selected_group_nr
-    return selected_groups
+            elif group_type == "zajęcia z wf":
+                while w != 'y' and w!='n':
+                    w = input("Dodawać wf?: y/n\n")
+                    if w == 'y':
+                        selected_group_nr = '999'
+                    elif w == 'n':
+                        selected_group_nr = '0'
+
+            elif group_type == "lektorat":
+                while w != 'y' and w!='n':
+                    w = input("Dodawać lektorat?: y/n\n")
+                    if w == 'y':
+                        selected_group_nr = '999'
+                    elif w == 'n':
+                        selected_group_nr = '0'
+
+            else:
+                while not (selected_group_nr.isdigit() and 1 <= int(selected_group_nr) <= int(group_qty_per_lesson_type[group_type])):
+                    selected_group_nr = input(
+                        f"Wybierz grupę na {group_type.upper()}, max {group_qty_per_lesson_type[group_type]} grup: ")
+                    if selected_group_nr.isdigit() and 1 <= int(selected_group_nr) <= int(group_qty_per_lesson_type[group_type]):
+                        break
+                    print("🫥🫥🫥")
+
+            selected_group_numbers[group_type] = selected_group_nr
+    return selected_group_numbers
 
 def create_timetable_for_selected_groups(timetable_dict, selected_group_numbers):
     final_timetable = {weekday: [] for weekday in timetable_dict}
@@ -89,15 +122,27 @@ def create_timetable_for_selected_groups(timetable_dict, selected_group_numbers)
         for lesson in timetable_dict[weekday]:
             lesson_type = lesson["group_type"]
             group_number = lesson["group_nr"]
-            if group_number == selected_group_numbers[lesson_type]:
-                final_timetable[weekday].append(lesson)
+            if group_number == '0':
+                break
+
+            else:
+                if group_number == selected_group_numbers[lesson_type]:
+                    final_timetable[weekday].append(lesson)
 
     return final_timetable
 
 def create_pandas_frame(timetable):
-    times_1 = {lesson['time_start'] for key in timetable.keys() for lesson in timetable[key]}
-    times_2 = {lesson['time_end'] for key in timetable.keys() for lesson in timetable[key]}
-    indexes = sorted(pd.to_datetime(list(times_1 | times_2), format="%H:%M").time)
+    times = []
+    current = datetime.strptime("8:00", "%H:%M")
+    end = datetime.strptime("19:45", "%H:%M")
+    step = timedelta(hours=1, minutes=45)
+
+    while current <= end:
+        times.append(f"{current.hour}:{current.minute:02d}")
+        current += step
+
+    # times_2 = {lesson['time_end'] for key in timetable.keys() for lesson in timetable[key]}
+    indexes = sorted(pd.to_datetime(times, format="%H:%M").time)
     df = pd.DataFrame(columns=timetable.keys(), index=indexes)
 
     return df
@@ -109,9 +154,9 @@ def fill_pandas_form(final_timetable_dict):
     for day in timetable:
         for lesson in timetable[day]:
             time_start = pd.to_datetime(lesson["time_start"], format="%H:%M").time()
-            time_end = pd.to_datetime(lesson["time_end"], format="%H:%M").time()
-            mask = (df.index >= time_start) & (df.index <= time_end)
-            df.loc[mask, day] = lesson["subject"]
+            mask = (df.index == time_start)
+            opis = f"{lesson["group_type"]}:\n {lesson["subject"]}"
+            df.loc[mask, day] = opis
 
     return df
 
@@ -129,7 +174,7 @@ def save_file(file, to_where_folder_name):
 
     file.to_excel(f"{destination_folder}/{name}")
 
-def combine(url, test=False):
+def combine(url, test=True):
     timetable_dict = get_timetable_dict(url)
     # CREATES DICT TIMETABLE FOR ALL GROUPS ^^
     group_qty_per_lesson_type = find_group_qty_per_lesson_type(timetable_dict)
@@ -140,8 +185,8 @@ def combine(url, test=False):
     filled_df = fill_pandas_form(final_timetable_dict)
     # CREATES A PANDA FORM AND FILLS IT WITH DICT TIMETABLE
     save_file(filled_df, "timetables")
+    return 0
 
-
-url = "https://web.usos.agh.edu.pl/kontroler.php?_action=katalog2%2Fprzedmioty%2FpokazPlanGrupyPrzedmiotow&grupa_kod=ITE_1S_sem1&cdyd_kod=25%2F26-Z&fbclid=IwY"
-timetable = combine(url)
+url = "https://web.usos.agh.edu.pl/kontroler.php?_action=katalog2%2Fprzedmioty%2FpokazPlanGrupyPrzedmiotow&grupa_kod=ITE_1S_sem3&cdyd_kod=25%2F26-Z&fbclid=IwY"
+timetable = combine(url, False)
 
