@@ -4,6 +4,7 @@ Skrypt w Pythonie do zrobienia własnego planu z planu USOS. Nie znajac swojego 
 
 Podajesz link do planu, wybierasz domniemane grupy i dostajesz plik `.xlsx` tylko z tymi zajęciami, których grupy wybrales.
 
+Jesli cos nie dziala, to dowolne ai powinno pomoc.  
 ## Instalacja
 
 Potrzebny jest Python 3 i Git.
