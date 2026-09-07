@@ -1,34 +1,58 @@
 # UsosTimetable
 
-I made this because checking the full USOS timetable and figuring out my actual groups every time was annoying.
+Mały skrypt w Pythonie do zrobienia własnego planu z planu USOS AGH.
 
-The script downloads the AGH USOS timetable, reads all available groups and lets me generate a much simpler `.xlsx` timetable with only the groups I choose.
+Podajesz link do planu, wybierasz swoje grupy i dostajesz plik `.xlsx` tylko z tymi zajęciami, które Cię interesują.
 
-## what it does
+## Instalacja
 
-- downloads the timetable from USOS
-- parses the HTML with BeautifulSoup
-- reads subjects, hours, group types and group numbers
-- lets me choose the groups I need
-- builds a timetable with pandas
-- exports it to `.xlsx`
+Potrzebny jest Python 3 i Git.
 
-## setup
+Najpierw pobierz repo:
 
 ```bash
 git clone https://github.com/AleksVizvary/UsosTimetable.git
 cd UsosTimetable
+```
+
+### macOS / Linux
+
+```bash
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
+python3 main.py
 ```
 
-For now the USOS timetable URL is set in the code. Run:
+### Windows PowerShell
 
-```bash
-python main.py
+```powershell
+py -m venv venv
+venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+py main.py
 ```
 
-## status
+## Użycie
 
-works for the current AGH USOS timetable format. if the HTML structure changes, the parser will probably need an update.
+Po uruchomieniu program poprosi o link do planu USOS:
+
+```text
+Wklej link do planu USOS:
+```
+
+Otwórz plan grupy w USOS-ie i skopiuj cały adres z przeglądarki.
+
+Potem program pokaże dostępne numery grup dla każdego typu zajęć. Wybierz swoje numery. Przy wykładzie, WF-ie i lektoracie wystarczy odpowiedzieć `y` albo `n`.
+
+Gotowy plik zapisze się w folderze `timetables`, np.:
+
+```text
+timetables/schedule_1.xlsx
+```
+
+Przy kolejnym uruchomieniu powstanie `schedule_2.xlsx`, itd.
+
+## Jeśli coś nie działa
+
+Skrypt jest napisany pod obecny format planu na USOS AGH. Jeśli USOS zmieni układ strony, parser może wymagać poprawki.
