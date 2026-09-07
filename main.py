@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 import pandas as pd
 import pathlib
+import re
 from datetime import datetime
 
 pd.set_option("display.max_columns", 500)
@@ -14,20 +15,22 @@ class TimetableError(Exception):
 def get_lesson_dict(lesson):
     subject = lesson[0].strip()
 
-    try:
-        date_and_time = lesson[1].replace(" ", "").split(",")
-        time = next(part for part in date_and_time if "-" in part).split("-")
-        time_start = time[0]
-        time_end = time[1]
-    except (StopIteration, IndexError):
+    time_match = re.search(
+        r"(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})",
+        lesson[1],
+    )
+    if time_match is None:
         raise TimetableError("Nie udało się odczytać godzin zajęć z USOS-a.")
+
+    time_start, time_end = time_match.groups()
 
     group_info = [part.strip() for part in lesson[2].split(",")]
     group_type = group_info[0]
     group_nr = ""
 
-    if len(group_info) > 1:
-        group_nr = "".join(i for i in group_info[1] if i.isdigit())
+    group_match = re.search(r"grupa\s*(?:nr\s*)?(\d+)", lesson[2], re.IGNORECASE)
+    if group_match is not None:
+        group_nr = group_match.group(1)
 
     return {
         "subject": subject,
