@@ -1,8 +1,8 @@
 # UsosTimetable
 
-Skrypt w Pythonie do zrobienia własnego planu z planu USOS AGH. Nie znajac swojego planu, jeszcze przed ogarnieciem sie dziekanatu, pozwala oszacowac jak bedzie wygladal plan zajec dla wybranych grup. 
+Skrypt w Pythonie do zrobienia własnego planu z planu USOS. Nie znajac swojego planu, jeszcze przed ogarnieciem sie dziekanatu, pozwala oszacowac jak bedzie wygladal plan zajec dla wybranych grup. 
 
-Podajesz link do planu, wybierasz domniemane grupy i dostajesz plik `.xlsx` tylko z tymi zajęciami, które Cię interesują.
+Podajesz link do planu, wybierasz domniemane grupy i dostajesz plik `.xlsx` tylko z tymi zajęciami, których grupy wybrales.
 
 ## Instalacja
 
