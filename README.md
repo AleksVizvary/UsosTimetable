@@ -1,6 +1,6 @@
 # UsosTimetable
 
-Mały skrypt w Pythonie do zrobienia własnego planu z planu USOS AGH.
+Skrypt w Pythonie do zrobienia własnego planu z planu USOS AGH.
 
 Podajesz link do planu, wybierasz swoje grupy i dostajesz plik `.xlsx` tylko z tymi zajęciami, które Cię interesują.
 
