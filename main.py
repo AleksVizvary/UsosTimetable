@@ -60,7 +60,7 @@ def get_timetable_dict(url):
 
     if main_soup is None:
         raise TimetableError(
-            "Nie znalazłem planu na tej stronie. Sprawdź link albo spróbuj ponownie później."
+            "Bledny link."
         )
 
     days = soup.find_all("timetable-day")
