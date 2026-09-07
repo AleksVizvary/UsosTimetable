@@ -191,7 +191,7 @@ def create_pandas_frame(timetable):
     }
 
     if not times:
-        raise TimetableError("Po wybraniu grup plan jest pusty.")
+        raise TimetableError("Dla wybranych grup plan jest pusty.")
 
     sorted_times = sorted(times, key=lambda value: datetime.strptime(value, "%H:%M"))
     indexes = [datetime.strptime(value, "%H:%M").time() for value in sorted_times]
@@ -205,7 +205,7 @@ def fill_pandas_form(final_timetable_dict):
     for day in final_timetable_dict:
         for lesson in final_timetable_dict[day]:
             time_start = datetime.strptime(lesson["time_start"], "%H:%M").time()
-            description = f'{lesson["group_type"]}:\n{lesson["subject"]}'
+            description = f'{lesson["group_type"]}: \n{lesson["subject"]}'
             current_value = df.at[time_start, day]
 
             if pd.isna(current_value):
@@ -244,7 +244,7 @@ def combine(url, test=False):
 
 if __name__ == "__main__":
     try:
-        url = input("Wklej link do planu USOS:\n").strip()
+        url = input("Wklej link do planu:\n").strip()
         saved_file = combine(url)
         print(f"\nGotowe. Plan zapisany tutaj:\n{saved_file}")
     except TimetableError as error:
